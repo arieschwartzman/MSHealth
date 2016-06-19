@@ -1,47 +1,51 @@
-package com.arieschwartzman.cortana;
+package com.arieschwartzman.cortana.activities;
 
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.arieschwartzman.cortana.services.ISummaryService;
+import com.arieschwartzman.cortana.R;
+import com.arieschwartzman.cortana.model.SummaryResponse;
+import com.arieschwartzman.cortana.auth.ITokenSetter;
+import com.arieschwartzman.cortana.auth.TokenAsyncTask;
+import com.arieschwartzman.cortana.auth.TokenResponse;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class CountSteps extends Activity  {
+public class CountStepsActivity extends Activity  implements ITokenSetter {
 
     private TextView tv;
     private ProgressBar progressBar;
-    private TextToSpeech textToSpeech;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String query = getIntent().getStringExtra(SearchManager.QUERY);
         setContentView(R.layout.activity_count_steps);
-        SharedPreferences pref = getSharedPreferences("AppPref", MODE_PRIVATE);
-        String token = pref.getString("Token","");
         tv = (TextView) findViewById(R.id.textView);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        BackgroundTask backgroundTask = new BackgroundTask();
-        backgroundTask.execute(token);
+        SharedPreferences pref = getSharedPreferences("AppPref", MODE_PRIVATE);
+        String refreshToken = pref.getString("RefreshToken",null);
+        if (refreshToken != null) {
+            TokenAsyncTask task = new TokenAsyncTask(this);
+            task.execute(refreshToken, "refresh");
+        }
     }
-
 
     public void renderResponse(SummaryResponse response) {
         int stepAvg = 0;
@@ -57,8 +61,17 @@ public class CountSteps extends Activity  {
         progressBar.setVisibility(View.INVISIBLE);
     }
 
+    @Override
+    public void setToken(TokenResponse tokenResponse) {
+        SumamryAsyncTask backgroundTask = new SumamryAsyncTask();
+        SharedPreferences pref = getSharedPreferences("AppPref", MODE_PRIVATE);
+        String token = pref.getString("Token",null);
+        if (token != null) {
+            backgroundTask.execute(token);
+        }
+    }
 
-    public class BackgroundTask extends AsyncTask<String,Void,SummaryResponse> {
+    public class SumamryAsyncTask extends AsyncTask<String,Void,SummaryResponse> {
 
         private ISummaryService service;
 
@@ -110,8 +123,7 @@ public class CountSteps extends Activity  {
         @Override
         protected void onPostExecute(SummaryResponse response) {
             super.onPostExecute(response);
-            CountSteps.this.renderResponse(response);
-
+            CountStepsActivity.this.renderResponse(response);
         }
     }
 }

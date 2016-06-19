@@ -1,4 +1,6 @@
-package com.arieschwartzman.cortana;
+package com.arieschwartzman.cortana.model;
+
+import com.arieschwartzman.cortana.model.SummaryInfo;
 
 import java.util.List;
 

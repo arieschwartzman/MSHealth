@@ -1,6 +1,6 @@
-package com.arieschwartzman.cortana;
+package com.arieschwartzman.cortana.model;
 
-import java.util.List;
+import com.arieschwartzman.cortana.model.CaloriesBurnedSummary;
 
 /**
  * Created by ariesch on 16-Jun-16.

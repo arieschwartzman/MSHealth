@@ -1,4 +1,4 @@
-package com.arieschwartzman.cortana;
+package com.arieschwartzman.cortana.model;
 
 /**
  * Created by ariesch on 17-Jun-16.
